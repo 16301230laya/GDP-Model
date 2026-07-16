@@ -152,6 +152,15 @@ ol.steps b{color:var(--ink)}
 
 <nav class="tabs" aria-label="Sections"><div class="wrap" id="tabbar"></div></nav>
 
+<div id="exampleBanner" class="wrap" style="padding-bottom:0" hidden>
+  <div class="note" style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:14px">
+    <span style="flex:1;min-width:220px"><b>Example numbers are loaded.</b> These are made-up figures so you
+    can follow the flow of the model — they are not real PNG statistics. Explore the tabs left to right,
+    then clear them when you are ready to enter official data.</span>
+    <button class="btn small" id="btnClearExample">Clear example numbers</button>
+  </div>
+</div>
+
 <main class="wrap">
 
 <section id="panel-guide">
@@ -312,12 +321,12 @@ function defaultState(){
   }
   return s;
 }
-let state;
+let state, firstRun = false;
 try {
   const raw = localStorage.getItem(STORE_KEY);
-  state = raw ? JSON.parse(raw) : defaultState();
-  if (!state || !state.settings) state = defaultState();
-} catch (e){ state = defaultState(); }
+  state = raw ? JSON.parse(raw) : (firstRun = true, defaultState());
+  if (!state || !state.settings) { state = defaultState(); firstRun = true; }
+} catch (e){ state = defaultState(); firstRun = true; }
 
 let saveTimer = null;
 function save(){
@@ -329,6 +338,12 @@ function save(){
   }, 400);
 }
 function setStatus(t){ document.getElementById("saveState").textContent = t; }
+function saveNow(){
+  clearTimeout(saveTimer); saveTimer = null;
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); setStatus("Saved on this device"); }
+  catch(e){ setStatus("Could not save — storage full?"); }
+}
+window.addEventListener("pagehide", ()=>{ if (saveTimer) saveNow(); });
 
 /* ============================== helpers ============================== */
 const $ = id => document.getElementById(id);
@@ -395,6 +410,7 @@ $("tabbar").addEventListener("click", e=>{
   activeTab = b.dataset.tab; renderTabs(); showTab();
 });
 function showTab(){
+  if (typeof renderBanner === "function") renderBanner();
   document.querySelectorAll("main section").forEach(s=>s.classList.toggle("on", s.id==="panel-"+activeTab));
   const r = {settings:renderSettings, commodities:renderCommodities, production:renderProduction,
     prices:renderPrices, other:renderOther, summary:renderSummary, charts:renderCharts, guide:renderGuide};
@@ -635,17 +651,17 @@ $("importFile").addEventListener("change", e=>{
       const s=JSON.parse(r.result);
       if(!s||!s.settings||!Array.isArray(s.commodities)) throw 0;
       if(!confirm("Replace everything in this browser with the backup file?")) return;
-      state=s; save(); renderTabs(); showTab(); setStatus("Backup restored");
+      state=s; saveNow(); renderTabs(); showTab(); setStatus("Backup restored");
     }catch(_){ alert("That file is not a valid model backup."); } };
   r.readAsText(f); e.target.value="";
 });
 $("btnClear").addEventListener("click", ()=>{
   if(!confirm("Delete ALL data in this browser and start fresh? Download a backup first if unsure.")) return;
-  state=defaultState(); save(); renderTabs(); showTab(); setStatus("Cleared");
+  state=defaultState(); saveNow(); renderTabs(); showTab(); setStatus("Cleared");
 });
 $("btnExample").addEventListener("click", ()=>{
   if(!confirm("Fill the model with made-up example numbers (for learning the tool)? Your current production, price and GVA entries will be overwritten.")) return;
-  loadExample(); save(); renderGuide(); setStatus("Example numbers loaded");
+  loadExample(); saveNow(); renderGuide(); renderBanner(); setStatus("Example numbers loaded");
   alert("Example numbers loaded. Open GDP Summary or Charts to see the model working, then clear or overwrite them with real figures.");
 });
 function loadExample(){
@@ -824,7 +840,14 @@ function attachBarHover(card, ys, vals){
   svg.addEventListener("mouseleave",()=>tip.style.display="none");
 }
 
-/* ============================== boot ============================== */
+/* ============================== example banner / boot ============================== */
+function renderBanner(){ $("exampleBanner").hidden = !state.exampleLoaded; }
+$("btnClearExample").addEventListener("click", ()=>{
+  if(!confirm("Remove the example numbers? The commodity register stays; all quantities, prices, GVA, taxes and population are cleared.")) return;
+  state = defaultState(); saveNow(); renderBanner(); renderTabs(); showTab(); setStatus("Example numbers cleared");
+});
+if (firstRun){ loadExample(); saveNow(); }
+renderBanner();
 $("countryTag").textContent = "— "+(state.settings.country||"");
 renderTabs(); showTab(); setStatus("Loaded — data stays on this device");
 </script>
