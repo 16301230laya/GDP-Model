@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup Check — Church Live Studio</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0d1017; color:#e6eaf2; font-family:'Segoe UI',Arial,sans-serif; line-height:1.6;
+    display:flex; justify-content:center; padding:40px 16px; }
+  .card { max-width:640px; width:100%; background:#151a24; border:1px solid #2a3245; border-radius:12px; padding:28px; }
+  h1 { font-size:22px; margin-bottom:4px; } .sub { color:#8b95ab; font-size:13px; margin-bottom:20px; }
+  .test { display:flex; gap:10px; align-items:flex-start; padding:10px 0; border-bottom:1px solid #232b3d; }
+  .test .st { font-size:18px; width:26px; text-align:center; }
+  .test b { font-size:14px; } .test .d { color:#8b95ab; font-size:12.5px; }
+  #fix { display:none; margin-top:18px; background:#1d2231; border-left:3px solid #d64545; padding:14px 16px;
+    border-radius:0 8px 8px 0; font-size:13.5px; }
+  #fix.show { display:block; }
+  #ok { display:none; margin-top:18px; background:#152a1c; border-left:3px solid #3ba55d; padding:14px 16px;
+    border-radius:0 8px 8px 0; font-size:14px; }
+  #ok.show { display:block; }
+  code, pre { background:#0f131c; border:1px solid #2a3245; border-radius:6px; color:#ffd97a; font-size:12.5px; }
+  code { padding:1px 6px; } pre { padding:10px 12px; margin:8px 0; overflow-x:auto; }
+  a { color:#c9a227; }
+  ol { padding-left:20px; } li { margin:6px 0; }
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>🩺 Setup Check</h1>
+  <div class="sub">Verifies that every part of Church Live Studio is working on this device.</div>
+  <div class="test"><div class="st" id="s1">⏳</div><div><b>Website hosting</b><div class="d">This page loaded, so hosting is live.</div></div></div>
+  <div class="test"><div class="st" id="s2">⏳</div><div><b>Firebase connection</b><div class="d">Loading the realtime engine.</div></div></div>
+  <div class="test"><div class="st" id="s3">⏳</div><div><b>Live sync — read</b><div class="d">Reading shared production state.</div></div></div>
+  <div class="test"><div class="st" id="s4">⏳</div><div><b>Live sync — write</b><div class="d">Writing a test value (this is what the Control Room does).</div></div></div>
+  <div class="test"><div class="st" id="s5">⏳</div><div><b>Translation service</b><div class="d">Translating a test phrase.</div></div></div>
+
+  <div id="ok">✅ <b>All systems go!</b> Open the
+    <a href="/control.html">Control Room</a> and the <a href="/output.html">Program Output</a> —
+    everything is live and synced.</div>
+
+  <div id="fix">❌ <b>One click left: the database is still locked.</b>
+    <ol>
+      <li>Open <a href="https://console.firebase.google.com/project/church-live-studio-png/database/church-live-studio-png-default-rtdb/rules" target="_blank">the database Rules page</a> (sign in with the same Google account you used before).</li>
+      <li>Replace everything in the editor with:
+<pre>{
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
+}</pre></li>
+      <li>Click <b>Publish</b>, then come back here and <a href="javascript:location.reload()">re-run this check</a>.</li>
+    </ol>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script>
+const set = (id, v) => document.getElementById(id).textContent = v;
+set('s1', '✅');
+let failed = false;
+function fail(id) { set(id, '❌'); failed = true; document.getElementById('fix').classList.add('show'); }
+
+(async () => {
+  try {
+    firebase.initializeApp({
+      apiKey: 'AIzaSyBMCsGZPcC13iaadwG6yQmZOKYs1kGRLaQ',
+      authDomain: 'church-live-studio-png.firebaseapp.com',
+      databaseURL: 'https://church-live-studio-png-default-rtdb.firebaseio.com',
+      projectId: 'church-live-studio-png',
+      appId: '1:1063152167128:web:75398c042dc87d68b40fad'
+    });
+    set('s2', '✅');
+  } catch (e) { fail('s2'); return; }
+
+  const db = firebase.database();
+  try { await db.ref('state').get(); set('s3', '✅'); } catch (e) { fail('s3'); }
+  try {
+    await db.ref('bus/setupCheck').set({ ts: Date.now(), ua: navigator.userAgent.slice(0, 60) });
+    set('s4', '✅');
+  } catch (e) { fail('s4'); }
+
+  try {
+    const r = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=es&dt=t&q=' +
+      encodeURIComponent('God is love'));
+    const j = await r.json();
+    if ((j[0] || []).map(p => p[0]).join('')) set('s5', '✅'); else throw 0;
+  } catch {
+    try {
+      const r = await fetch('https://api.mymemory.translated.net/get?q=God%20is%20love&langpair=en|es');
+      const j = await r.json();
+      if (j.responseData && j.responseData.translatedText) set('s5', '✅'); else throw 0;
+    } catch { set('s5', '⚠️'); }
+  }
+
+  if (!failed) document.getElementById('ok').classList.add('show');
+})();
+</script>
+</body>
+</html>

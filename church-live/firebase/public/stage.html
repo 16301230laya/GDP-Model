@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stage Display — Church Live Studio</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:100%; height:100%; background:#000; color:#fff; overflow:hidden;
+    font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; cursor:none; }
+  #wrap { display:flex; flex-direction:column; height:100%; padding:2.5vw; }
+  #top { display:flex; justify-content:space-between; align-items:baseline; }
+  #clock { font-size:5vw; font-weight:700; font-variant-numeric:tabular-nums; }
+  #src { font-size:1.6vw; color:#c9a227; text-transform:uppercase; letter-spacing:.15em; }
+  #current { flex:1; display:flex; flex-direction:column; justify-content:center; text-align:center; }
+  #currentLines { font-size:3.4vw; line-height:1.5; font-weight:600; }
+  #song { color:#c9a227; font-size:1.4vw; margin-top:1.5vw; text-transform:uppercase; letter-spacing:.12em; }
+  #msg { min-height:6vw; display:flex; align-items:center; justify-content:center;
+    font-size:2.6vw; font-weight:700; color:#000; background:#ffd23e; border-radius:.6vw;
+    padding:1vw 2vw; text-align:center; visibility:hidden; }
+  #msg.show { visibility:visible; animation:blink 1.2s infinite; }
+  @keyframes blink { 50% { opacity:.55; } }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <div id="top"><div id="src">—</div><div id="clock"></div></div>
+  <div id="current"><div id="currentLines"></div><div id="song"></div></div>
+  <div id="msg"></div>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebus.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+FireBus.connect('stage', msg => {
+    if (msg.type !== 'state') return;
+    const s = msg.state;
+    $('src').textContent = 'ON AIR: ' + s.program.source;
+    if (s.program.source === 'lyrics') {
+      $('currentLines').innerHTML = (s.lyrics.lines || []).map(l => esc(l)).join('<br>');
+      $('song').textContent = s.lyrics.songTitle || '';
+    } else if (s.program.source === 'scripture') {
+      $('currentLines').textContent = s.scripture.text || '';
+      $('song').textContent = s.scripture.reference || '';
+    } else {
+      $('currentLines').textContent = '';
+      $('song').textContent = '';
+    }
+    $('msg').textContent = s.stageMessage || '';
+    $('msg').classList.toggle('show', !!s.stageMessage);
+});
+setInterval(() => {
+  $('clock').textContent = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}, 500);
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+</script>
+</body>
+</html>

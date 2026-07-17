@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Church Live Studio</title>
+<style>
+  :root { --accent:#c9a227; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:#0d1017; color:#e6eaf2; font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;
+    line-height:1.6; }
+  .hero { text-align:center; padding:60px 20px 30px; background:radial-gradient(ellipse at 50% 0%, #1d2740, #0d1017 70%); }
+  .hero .mark { font-size:56px; color:var(--accent); }
+  h1 { font-size:34px; margin:10px 0 6px; }
+  .hero p { color:#8b95ab; max-width:640px; margin:0 auto; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px;
+    max-width:960px; margin:30px auto; padding:0 20px; }
+  .card { background:#151a24; border:1px solid #2a3245; border-radius:12px; padding:22px; text-decoration:none;
+    color:inherit; transition:.15s; display:block; }
+  .card:hover { border-color:var(--accent); transform:translateY(-2px); }
+  .card .ico { font-size:30px; }
+  .card h2 { font-size:17px; margin:8px 0 4px; }
+  .card p { color:#8b95ab; font-size:13px; }
+  .card .url { display:inline-block; margin-top:10px; font-size:12px; color:var(--accent);
+    background:#0f131c; padding:3px 10px; border-radius:20px; font-family:monospace; }
+  .guide { max-width:960px; margin:20px auto 60px; padding:0 20px; }
+  .guide h2 { font-size:22px; margin:34px 0 10px; color:var(--accent); }
+  .guide h3 { font-size:16px; margin:20px 0 6px; }
+  .guide p, .guide li { color:#c3cadb; font-size:14px; }
+  .guide ol, .guide ul { padding-left:22px; }
+  .guide li { margin:6px 0; }
+  code { background:#0f131c; border:1px solid #2a3245; padding:1px 7px; border-radius:5px;
+    font-size:12.5px; color:#ffd97a; }
+  .tip { background:#151a24; border-left:3px solid var(--accent); padding:12px 16px; border-radius:0 8px 8px 0;
+    margin:14px 0; font-size:13.5px; color:#c3cadb; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="mark">✝</div>
+  <h1>Church Live Studio</h1>
+  <p>A professional live-production suite for your church service — camera switching, worship lyrics,
+     music, scripture, lower thirds, a scrolling headline ticker, live translated captions, and a
+     broadcast-ready output you can stream to YouTube, Facebook and beyond.</p>
+</div>
+
+<div class="cards">
+  <a class="card" href="/control.html" target="_blank">
+    <div class="ico">🎛️</div><h2>Control Room</h2>
+    <p>The operator console. Switch cameras and scenes, run lyrics, music, ticker, lower thirds and live translation.</p>
+    <span class="url">/control.html</span>
+  </a>
+  <a class="card" href="/output.html" target="_blank">
+    <div class="ico">📺</div><h2>Program Output</h2>
+    <p>The clean broadcast feed (1920×1080). Show it on the projector, or capture it in OBS to go live.</p>
+    <span class="url">/output.html</span>
+  </a>
+  <a class="card" href="/stage.html" target="_blank">
+    <div class="ico">🖥️</div><h2>Stage Display</h2>
+    <p>Confidence monitor for the worship team & speakers — current lyrics, clock, and messages from the booth.</p>
+    <span class="url">/stage.html</span>
+  </a>
+</div>
+
+<div class="guide">
+  <h2>🚀 Quick start</h2>
+  <ol>
+    <li>Open the <b>Control Room</b> on the operator's computer (or tablet/phone on the same network).</li>
+    <li>Open the <b>Program Output</b> on the computer connected to the projector / streaming PC.
+        Press <code>F11</code> for full screen.</li>
+    <li>Everything you do in the Control Room appears on every connected output instantly.</li>
+  </ol>
+  <div class="tip">💡 This site is live on the internet — any phone, tablet or computer anywhere can open
+    these pages. A phone opening the Control Room can broadcast its camera as an extra camera angle with
+    “Presenter Cam”. Keep the Control Room link private: anyone who has it can operate your service.</div>
+
+  <h2>📡 Go live on YouTube</h2>
+  <ol>
+    <li>Install <a href="https://obsproject.com" style="color:var(--accent)">OBS Studio</a> (free).</li>
+    <li>In OBS add a <b>Browser</b> source: URL <code>https://church-live-studio-png.web.app/output.html</code>,
+        width <code>1920</code>, height <code>1080</code>, and tick <b>Control audio via OBS</b>
+        so worship music and videos are heard on the stream.</li>
+    <li>In <a href="https://studio.youtube.com" style="color:var(--accent)">YouTube Studio</a> click
+        <b>Create → Go live</b>, copy the <b>Stream key</b>.</li>
+    <li>In OBS: <b>Settings → Stream</b> → Service <b>YouTube</b> → paste the key → <b>Start Streaming</b>.</li>
+  </ol>
+
+  <h2>📘 Go live on Facebook</h2>
+  <ol>
+    <li>On your church Page choose <b>Live video</b> → <b>Go live</b> → <b>Streaming software</b>.</li>
+    <li>Copy the <b>Stream key</b> from Facebook Live Producer.</li>
+    <li>In OBS: <b>Settings → Stream</b> → Service <b>Facebook Live</b> → paste the key → <b>Start Streaming</b>.</li>
+  </ol>
+  <div class="tip">📡 Want YouTube <b>and</b> Facebook at the same time? Use OBS's <i>Multiple Output</i>
+    plugin, or a restreaming service (Restream.io, Castr) — stream once to them and they forward to every platform.</div>
+
+  <h2>🌍 Live translation</h2>
+  <p>In the Control Room, pick the speaker's language and the target language, then press
+     <b>🎙 Start listening</b>. The browser transcribes the sermon through the microphone, auto-translates each
+     phrase, and shows both as broadcast-style subtitles on the Program Output. Works best in Chrome or Edge
+     with an internet connection.</p>
+
+  <h2>🎥 Camera angles</h2>
+  <ul>
+    <li><b>Camera</b> — any webcam/capture card plugged into the machine running the Program Output.
+        Multiple cameras? Pick which one is live from the Control Room dropdown.</li>
+    <li><b>Presenter Cam</b> — any phone/laptop on the same network opens the Control Room and broadcasts
+        its camera to the output over WebRTC: an instant wireless camera angle.</li>
+    <li>Pro tip: for multi-camera productions, you can also do camera switching in OBS itself and use this
+        app as your graphics layer (lyrics, ticker, captions) on top.</li>
+  </ul>
+</div>
+</body>
+</html>

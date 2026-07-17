@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Program Output — Church Live Studio</title>
+<style>
+  :root { --accent: #c9a227; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; background: #000; overflow: hidden;
+    font-family: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; cursor: none; }
+
+  #stage { position: absolute; inset: 0; background: #000; }
+  .layer { position: absolute; inset: 0; opacity: 0; transition: opacity .6s ease; pointer-events: none; }
+  .layer.live { opacity: 1; }
+  video, img.full { width: 100%; height: 100%; object-fit: cover; }
+  img.contain { object-fit: contain; background: #000; }
+
+  /* ---- Logo / holding screen ---- */
+  #logoLayer { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: radial-gradient(ellipse at 50% 35%, #1d2740 0%, #0b1020 55%, #05070f 100%); }
+  #logoMark { font-size: 9vw; color: var(--accent); text-shadow: 0 0 60px rgba(201,162,39,.55); }
+  #logoName { font-size: 4.2vw; color: #fff; font-weight: 700; letter-spacing: .04em; margin-top: 1.2vw; }
+  #logoTag { font-size: 1.7vw; color: #b9c2d8; margin-top: .8vw; font-weight: 300; letter-spacing: .12em; }
+
+  /* ---- Lyrics ---- */
+  #lyricsLayer { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #0b1020 0%, #141a2e 100%); padding: 4vw 6vw; text-align: center; }
+  #lyricsLayer.theme-light { background: linear-gradient(160deg,#f4f1e8,#e8e2d0); }
+  #lyricsLayer.theme-light .lyLine { color: #22252d; text-shadow: none; }
+  #lyricsLayer.theme-light #lySong { color: #7a6a2f; }
+  .lyLine { font-size: 3.6vw; line-height: 1.45; color: #fff; font-weight: 600;
+    text-shadow: 0 3px 18px rgba(0,0,0,.6); }
+  #lySong { position: absolute; bottom: 2.2vw; right: 3vw; font-size: 1.2vw; color: var(--accent);
+    letter-spacing: .1em; text-transform: uppercase; }
+
+  /* ---- Scripture ---- */
+  #scriptureLayer { display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: linear-gradient(160deg, #101828 0%, #1a2438 100%); padding: 4vw 9vw; text-align: center; }
+  #scText { font-size: 2.9vw; line-height: 1.55; color: #f5f2e8; font-style: italic; font-weight: 400; }
+  #scRef { margin-top: 2.2vw; font-size: 1.9vw; color: var(--accent); font-weight: 700; letter-spacing: .06em; }
+
+  /* ---- Lower third ---- */
+  #lowerThird { position: absolute; left: 4vw; bottom: 9vw; transform: translateX(-120%);
+    transition: transform .55s cubic-bezier(.2,.9,.3,1); max-width: 60vw; }
+  #lowerThird.show { transform: translateX(0); }
+  #ltInner { padding: 1vw 2.4vw 1.1vw 1.6vw; border-left: .45vw solid var(--accent);
+    background: linear-gradient(90deg, rgba(10,14,26,.94) 0%, rgba(10,14,26,.72) 78%, rgba(10,14,26,0) 100%); }
+  #ltTitle { font-size: 2.1vw; color: #fff; font-weight: 700; }
+  #ltSub { font-size: 1.25vw; color: #cdd6ea; margin-top: .25vw; font-weight: 300; letter-spacing: .05em; }
+  #lowerThird.style-blue  { --lt: #2f6fed; } #lowerThird.style-blue #ltInner { border-color: #2f6fed; }
+  #lowerThird.style-red   #ltInner { border-color: #d64545; }
+  #lowerThird.style-clean #ltInner { border-color: #fff; }
+
+  /* ---- Ticker ---- */
+  #tickerWrap { position: absolute; left: 0; right: 0; bottom: 0; height: 3.4vw; display: flex;
+    transform: translateY(110%); transition: transform .5s ease; background: #111827;
+    border-top: .18vw solid var(--accent); }
+  #tickerWrap.show { transform: translateY(0); }
+  #tickerBadge { flex: 0 0 auto; display: flex; align-items: center; padding: 0 1.6vw;
+    background: var(--accent); color: #14161c; font-weight: 800; font-size: 1.25vw;
+    letter-spacing: .12em; text-transform: uppercase; }
+  #tickerView { flex: 1; overflow: hidden; position: relative; }
+  #tickerText { position: absolute; white-space: nowrap; font-size: 1.35vw; line-height: 3.2vw;
+    color: #f9fafb; will-change: transform; }
+
+  /* ---- Captions (live translation) ---- */
+  #captions { position: absolute; left: 8vw; right: 8vw; bottom: 4.5vw; text-align: center;
+    opacity: 0; transition: opacity .3s; }
+  #captions.show { opacity: 1; }
+  #captions.tickerOn { bottom: 8vw; }
+  .capLine { display: inline-block; background: rgba(0,0,0,.75); color: #fff; padding: .45vw 1.4vw;
+    border-radius: .4vw; font-size: 1.9vw; line-height: 1.4; margin-top: .5vw; max-width: 84vw; }
+  .capLine.translated { color: #ffe9a8; font-size: 2.1vw; }
+  .capLine:empty { display: none; }
+
+  /* ---- Clock ---- */
+  #clock { position: absolute; top: 2vw; right: 2.6vw; font-size: 1.6vw; color: #fff;
+    background: rgba(0,0,0,.5); padding: .3vw 1vw; border-radius: .35vw; letter-spacing: .08em;
+    opacity: 0; transition: opacity .3s; font-variant-numeric: tabular-nums; }
+  #clock.show { opacity: 1; }
+
+  #blackLayer { background: #000; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <div class="layer" id="logoLayer">
+    <div id="logoMark">✝</div>
+    <div id="logoName">Church Live</div>
+    <div id="logoTag"></div>
+  </div>
+  <div class="layer" id="cameraLayer"><video id="camVideo" autoplay muted playsinline></video></div>
+  <div class="layer" id="remoteLayer"><video id="remoteVideo" autoplay playsinline></video></div>
+  <div class="layer" id="videoLayer"><video id="mediaVideo" playsinline></video></div>
+  <div class="layer" id="imageLayer"><img id="mediaImage" class="full contain" alt=""></div>
+  <div class="layer" id="lyricsLayer"><div id="lyLines"></div><div id="lySong"></div></div>
+  <div class="layer" id="scriptureLayer"><div id="scText"></div><div id="scRef"></div></div>
+  <div class="layer" id="blackLayer"></div>
+</div>
+
+<div id="lowerThird"><div id="ltInner"><div id="ltTitle"></div><div id="ltSub"></div></div></div>
+<div id="tickerWrap"><div id="tickerBadge">Live</div><div id="tickerView"><div id="tickerText"></div></div></div>
+<div id="captions"><div class="capLine" id="capOriginal"></div><br><div class="capLine translated" id="capTranslated"></div></div>
+<div id="clock"></div>
+<audio id="musicPlayer"></audio>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="firebus.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+let state = null;
+
+/* ---------------- FireBus (Firebase Realtime Database) ---------------- */
+const bus = FireBus.connect('output', msg => {
+  if (msg.type === 'state') { state = msg.state; render(); }
+  if (msg.type === 'caption') renderCaptionText(msg.original, msg.translated);
+  if (msg.type === 'command') handleCommand(msg.name, msg.payload);
+  if (msg.type === 'rtc-offer') acceptRemoteCamera(msg);
+  if (msg.type === 'rtc-ice' && pc && msg.to === 'output') pc.addIceCandidate(msg.candidate).catch(()=>{});
+  if (msg.type === 'rtc-stop') stopRemoteCamera();
+});
+const ws = { send: s => bus.send(JSON.parse(s)) };
+reportDevices();
+function mediaUrl(v) { return /^(https?:)?\/\//.test(v) ? v : 'media/' + encodeURIComponent(v); }
+
+/* ---------------- Camera devices ---------------- */
+async function reportDevices() {
+  try {
+    // ask permission once so labels are populated
+    const tmp = await navigator.mediaDevices.getUserMedia({ video: true }).catch(() => null);
+    if (tmp) tmp.getTracks().forEach(t => t.stop());
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const cams = devs.filter(d => d.kind === 'videoinput')
+                     .map((d, i) => ({ deviceId: d.deviceId, label: d.label || ('Camera ' + (i + 1)) }));
+    ws.send(JSON.stringify({ type: 'devices', devices: cams }));
+  } catch (e) { /* no camera available */ }
+}
+
+let camStream = null, currentCamId = null;
+async function showCamera(deviceId) {
+  if (camStream && currentCamId === deviceId) return;
+  if (camStream) camStream.getTracks().forEach(t => t.stop());
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: deviceId ? { deviceId: { exact: deviceId }, width: 1920, height: 1080 } : { width: 1920, height: 1080 },
+      audio: false
+    });
+    currentCamId = deviceId;
+    $('camVideo').srcObject = camStream;
+  } catch (e) { console.warn('camera error', e); }
+}
+
+/* ---------------- Remote presenter camera (WebRTC) ---------------- */
+let pc = null;
+async function acceptRemoteCamera(msg) {
+  stopRemoteCamera();
+  pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  pc.ontrack = ev => { $('remoteVideo').srcObject = ev.streams[0]; };
+  pc.onicecandidate = ev => {
+    if (ev.candidate) ws.send(JSON.stringify({ type: 'rtc-ice', to: 'control', candidate: ev.candidate }));
+  };
+  await pc.setRemoteDescription(msg.offer);
+  const answer = await pc.createAnswer();
+  await pc.setLocalDescription(answer);
+  ws.send(JSON.stringify({ type: 'rtc-answer', answer }));
+}
+function stopRemoteCamera() {
+  if (pc) { pc.close(); pc = null; }
+  $('remoteVideo').srcObject = null;
+}
+
+/* ---------------- Render ---------------- */
+const layers = {
+  logo: 'logoLayer', camera: 'cameraLayer', remoteCamera: 'remoteLayer',
+  video: 'videoLayer', image: 'imageLayer', lyrics: 'lyricsLayer',
+  scripture: 'scriptureLayer', black: 'blackLayer'
+};
+
+function render() {
+  if (!state) return;
+  document.documentElement.style.setProperty('--accent', state.branding.accent || '#c9a227');
+
+  /* branding */
+  $('logoMark').textContent = state.branding.logoText || '✝';
+  $('logoName').textContent = state.branding.churchName || '';
+  $('logoTag').textContent = state.branding.tagline || '';
+
+  /* program source */
+  const src = state.program.source;
+  for (const [key, id] of Object.entries(layers)) $(id).classList.toggle('live', key === src);
+
+  if (src === 'camera') showCamera(state.program.cameraDeviceId);
+  else if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; currentCamId = null; }
+
+  const mv = $('mediaVideo');
+  if (src === 'video' && state.program.videoFile) {
+    const want = mediaUrl(state.program.videoFile);
+    if (mv.getAttribute('src') !== want) { mv.src = want; mv.play().catch(()=>{}); }
+    mv.muted = state.overlay.muteProgram;
+  } else if (src !== 'video') { mv.pause(); }
+
+  if (state.program.imageFile) $('mediaImage').src = mediaUrl(state.program.imageFile);
+
+  /* lyrics */
+  $('lyLines').innerHTML = (state.lyrics.lines || [])
+    .map(l => '<div class="lyLine">' + escapeHtml(l) + '</div>').join('');
+  $('lySong').textContent = state.lyrics.songTitle || '';
+  $('lyricsLayer').classList.toggle('theme-light', state.lyrics.theme === 'light');
+
+  /* scripture */
+  $('scText').textContent = state.scripture.text ? '“' + state.scripture.text + '”' : '';
+  $('scRef').textContent = [state.scripture.reference, state.scripture.version].filter(Boolean).join('  ·  ');
+
+  /* lower third */
+  const lt = $('lowerThird');
+  lt.className = 'style-' + (state.lowerThird.style || 'gold') + (state.lowerThird.visible ? ' show' : '');
+  $('ltTitle').textContent = state.lowerThird.title || '';
+  $('ltSub').textContent = state.lowerThird.subtitle || '';
+
+  /* ticker */
+  const tw = $('tickerWrap');
+  tw.classList.toggle('show', !!state.ticker.visible);
+  tw.style.background = state.ticker.bg || '#111827';
+  $('tickerText').style.color = state.ticker.color || '#f9fafb';
+  setTicker(state.ticker.text || '', state.ticker.speed || 60);
+
+  /* captions */
+  const cap = $('captions');
+  cap.classList.toggle('show', !!state.captions.visible);
+  cap.classList.toggle('tickerOn', !!state.ticker.visible);
+  $('capOriginal').style.display = state.captions.showOriginal ? '' : 'none';
+  $('capTranslated').style.display = state.captions.showTranslated ? '' : 'none';
+  renderCaptionText(state.captions.original, state.captions.translated);
+
+  /* clock */
+  $('clock').classList.toggle('show', !!state.overlay.clock);
+
+  /* music */
+  const mp = $('musicPlayer');
+  mp.volume = state.music.volume ?? 0.8;
+  mp.loop = !!state.music.loop;
+  if (state.music.file) {
+    const want = mediaUrl(state.music.file);
+    if (mp.getAttribute('src') !== want) mp.src = want;
+    if (state.music.playing && mp.paused) mp.play().catch(()=>{});
+    if (!state.music.playing && !mp.paused) mp.pause();
+  } else { mp.pause(); mp.removeAttribute('src'); }
+}
+
+function renderCaptionText(orig, trans) {
+  $('capOriginal').textContent = orig || '';
+  $('capTranslated').textContent = trans || '';
+}
+
+function handleCommand(name, payload) {
+  const mv = $('mediaVideo'), mp = $('musicPlayer');
+  if (name === 'video-restart') { mv.currentTime = 0; mv.play().catch(()=>{}); }
+  if (name === 'music-restart') { mp.currentTime = 0; }
+  if (name === 'reload') location.reload();
+}
+
+/* ---------------- Ticker animation ---------------- */
+let tickerRAF = null, tickerX = 0, lastT = 0, tickerSpeed = 60, tickerCurrent = '';
+function setTicker(text, speed) {
+  tickerSpeed = speed;
+  if (text === tickerCurrent) return;
+  tickerCurrent = text;
+  $('tickerText').textContent = text + '      •      ' + text;
+  tickerX = $('tickerView').clientWidth;
+  if (!tickerRAF) tickerRAF = requestAnimationFrame(tickTicker);
+}
+function tickTicker(t) {
+  const dt = lastT ? (t - lastT) / 1000 : 0; lastT = t;
+  tickerX -= tickerSpeed * dt;
+  const el = $('tickerText');
+  if (tickerX < -el.scrollWidth / 2) tickerX = $('tickerView').clientWidth;
+  el.style.transform = 'translateX(' + tickerX + 'px)';
+  tickerRAF = requestAnimationFrame(tickTicker);
+}
+
+/* ---------------- Clock ---------------- */
+setInterval(() => {
+  $('clock').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}, 500);
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+</script>
+</body>
+</html>
