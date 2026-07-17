@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: church-live-studio
+    runtime: node
+    rootDir: church-live
+    buildCommand: npm install
+    startCommand: node server.js
+    plan: free
+    autoDeploy: true
