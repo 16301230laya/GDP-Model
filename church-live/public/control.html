@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Control Room — Church Live Studio</title>
+<style>
+  :root { --bg:#0d1017; --panel:#151a24; --panel2:#1b2231; --line:#2a3245; --txt:#e6eaf2;
+    --dim:#8b95ab; --accent:#c9a227; --live:#d64545; --ok:#3ba55d; --blue:#2f6fed; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--txt); font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif; font-size:14px; }
+
+  header { display:flex; align-items:center; gap:14px; padding:10px 18px; background:var(--panel);
+    border-bottom:1px solid var(--line); position:sticky; top:0; z-index:50; }
+  header .mark { color:var(--accent); font-size:22px; }
+  header h1 { font-size:16px; font-weight:700; letter-spacing:.04em; }
+  header .sub { color:var(--dim); font-size:12px; }
+  #connDot { width:10px; height:10px; border-radius:50%; background:var(--live); }
+  #connDot.on { background:var(--ok); }
+  header .spacer { flex:1; }
+  header a { color:var(--dim); text-decoration:none; font-size:12px; margin-left:12px; }
+  header a:hover { color:var(--txt); }
+
+  main { display:grid; grid-template-columns: 1.15fr 1fr 1fr; gap:14px; padding:14px 18px 40px; align-items:start; }
+  @media (max-width:1200px){ main{ grid-template-columns:1fr 1fr; } }
+  @media (max-width:820px){ main{ grid-template-columns:1fr; } }
+  .col { display:flex; flex-direction:column; gap:14px; }
+
+  section { background:var(--panel); border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  section > h2 { font-size:12px; text-transform:uppercase; letter-spacing:.14em; color:var(--dim);
+    padding:10px 14px; border-bottom:1px solid var(--line); background:var(--panel2);
+    display:flex; align-items:center; gap:8px; }
+  section > h2 .tag { margin-left:auto; font-size:10px; letter-spacing:.05em; padding:2px 8px; border-radius:20px; }
+  .tag.on { background:rgba(59,165,93,.18); color:#5fd08a; }
+  .tag.off { background:rgba(139,149,171,.15); color:var(--dim); }
+  .body { padding:12px 14px; display:flex; flex-direction:column; gap:10px; }
+
+  button { background:var(--panel2); color:var(--txt); border:1px solid var(--line); border-radius:7px;
+    padding:8px 12px; font-size:13px; cursor:pointer; transition:.15s; }
+  button:hover { border-color:var(--accent); }
+  button.live { background:var(--live); border-color:var(--live); color:#fff; font-weight:700; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#14161c; font-weight:700; }
+  button.blue { background:var(--blue); border-color:var(--blue); color:#fff; }
+  button.sm { padding:5px 9px; font-size:12px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .grid4 { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+
+  input[type=text], input[type=number], textarea, select {
+    background:#0f131c; color:var(--txt); border:1px solid var(--line); border-radius:7px;
+    padding:8px 10px; font-size:13px; width:100%; font-family:inherit; }
+  textarea { resize:vertical; }
+  input[type=range] { width:100%; accent-color:var(--accent); }
+  input[type=color] { border:none; background:none; width:36px; height:28px; cursor:pointer; }
+  label.inline { display:flex; align-items:center; gap:6px; color:var(--dim); font-size:12px; cursor:pointer; }
+  .hint { color:var(--dim); font-size:11.5px; line-height:1.5; }
+
+  .srcBtn { padding:14px 6px; text-align:center; font-weight:600; font-size:12.5px; border-radius:8px; }
+  .srcBtn.active { background:var(--live); border-color:var(--live); color:#fff; box-shadow:0 0 0 2px rgba(214,69,69,.35); }
+  .srcBtn .ico { display:block; font-size:20px; margin-bottom:4px; }
+
+  ul.filelist { list-style:none; max-height:180px; overflow-y:auto; display:flex; flex-direction:column; gap:4px; }
+  ul.filelist li { display:flex; align-items:center; gap:8px; padding:6px 8px; background:var(--panel2);
+    border-radius:6px; font-size:12.5px; }
+  ul.filelist .name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  ul.filelist .kind { color:var(--dim); font-size:10px; text-transform:uppercase; }
+
+  .blockBtn { text-align:left; font-size:12px; line-height:1.5; padding:8px 10px; white-space:pre-line; }
+  .blockBtn.active { border-color:var(--live); background:rgba(214,69,69,.15); }
+  #songList { max-height:140px; }
+  #songList li.selected { outline:1px solid var(--accent); }
+
+  #capPreview { background:#0f131c; border:1px solid var(--line); border-radius:7px; padding:10px;
+    min-height:64px; font-size:13px; line-height:1.5; }
+  #capPreview .tr { color:#ffe9a8; }
+</style>
+</head>
+<body>
+<header>
+  <span class="mark">✝</span>
+  <div><h1>Church Live Studio</h1><div class="sub">Control Room</div></div>
+  <div id="connDot" title="server connection"></div>
+  <span class="sub" id="presence"></span>
+  <div class="spacer"></div>
+  <button class="sm" id="btnBlack">⬛ Black out</button>
+  <button class="sm" id="btnLogo">🏠 Holding screen</button>
+  <a href="/output.html" target="_blank">Open Program Output ↗</a>
+  <a href="/stage.html" target="_blank">Stage Display ↗</a>
+  <a href="/" target="_blank">Streaming Guide ↗</a>
+</header>
+
+<main>
+<!-- ============ COLUMN 1 : PROGRAM ============ -->
+<div class="col">
+  <section>
+    <h2>🎬 Program Switcher <span class="tag on" id="programTag">LOGO</span></h2>
+    <div class="body">
+      <div class="grid4">
+        <button class="srcBtn" data-src="logo"><span class="ico">🏠</span>Holding</button>
+        <button class="srcBtn" data-src="camera"><span class="ico">📷</span>Camera</button>
+        <button class="srcBtn" data-src="remoteCamera"><span class="ico">🛰️</span>Presenter Cam</button>
+        <button class="srcBtn" data-src="video"><span class="ico">🎞️</span>Video</button>
+        <button class="srcBtn" data-src="image"><span class="ico">🖼️</span>Image</button>
+        <button class="srcBtn" data-src="lyrics"><span class="ico">🎵</span>Lyrics</button>
+        <button class="srcBtn" data-src="scripture"><span class="ico">📖</span>Scripture</button>
+        <button class="srcBtn" data-src="black"><span class="ico">⬛</span>Black</button>
+      </div>
+
+      <div class="row">
+        <select id="cameraSelect" style="flex:1"><option value="">— camera on output machine —</option></select>
+        <button class="sm" id="btnRefreshCams">↻</button>
+      </div>
+
+      <div class="row">
+        <button class="blue sm" id="btnStartPresenter">🛰️ Broadcast THIS device's camera to output</button>
+        <button class="sm" id="btnStopPresenter">Stop</button>
+      </div>
+      <div class="hint">“Camera” uses a webcam plugged into the output machine. “Presenter Cam” streams this
+        device's camera (e.g. a phone on the same Wi-Fi opening this page) to the program output via WebRTC —
+        that's your extra camera angle.</div>
+      <div class="row">
+        <button class="sm" id="btnVideoRestart">⟲ Restart video</button>
+        <label class="inline"><input type="checkbox" id="chkMute"> mute program video</label>
+        <label class="inline"><input type="checkbox" id="chkClock"> show clock</label>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>📁 Media Library</h2>
+    <div class="body">
+      <div class="row">
+        <input type="file" id="fileUpload" multiple style="flex:1; color:var(--dim); font-size:12px;">
+        <button class="sm primary" id="btnUpload">⬆ Upload</button>
+      </div>
+      <ul class="filelist" id="mediaList"></ul>
+      <div class="hint">Upload videos (mp4/webm), images and music (mp3/wav). Files land in the app's
+        <b>media/</b> folder — you can also drop files there directly. Use ▶ next to a file to send it to
+        Program (video/image) or load it into the Music player (audio).</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>🎧 Music / Worship Audio <span class="tag off" id="musicTag">stopped</span></h2>
+    <div class="body">
+      <div class="row"><select id="musicSelect" style="flex:1"><option value="">— choose a track —</option></select></div>
+      <div class="row">
+        <button id="btnMusicPlay" class="primary">▶ Play</button>
+        <button id="btnMusicPause">⏸ Pause</button>
+        <button id="btnMusicRestart" class="sm">⟲</button>
+        <label class="inline"><input type="checkbox" id="chkLoop"> loop</label>
+      </div>
+      <div class="row" style="align-items:center">
+        <span class="hint" style="width:52px">Volume</span>
+        <input type="range" id="musicVol" min="0" max="1" step="0.01" value="0.8" style="flex:1">
+        <button class="sm" id="btnFadeOut">Fade out</button>
+      </div>
+      <div class="hint">Audio plays through the <b>Program Output</b> page, so OBS captures it for the stream.</div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ COLUMN 2 : TEXT & OVERLAYS ============ -->
+<div class="col">
+  <section>
+    <h2>🎵 Song Lyrics</h2>
+    <div class="body">
+      <ul class="filelist" id="songList"></ul>
+      <div class="row">
+        <button class="sm" id="btnNewSong">+ New song</button>
+        <button class="sm" id="btnSaveSong" >💾 Save</button>
+        <button class="sm" id="btnDeleteSong">🗑 Delete</button>
+      </div>
+      <input type="text" id="songTitle" placeholder="Song title">
+      <textarea id="songText" rows="6" placeholder="Type lyrics… separate verses/blocks with a BLANK line. Each block becomes one projection slide."></textarea>
+      <div class="hint">Click a block below to project it (auto-switches Program to Lyrics):</div>
+      <div class="grid2" id="blockButtons"></div>
+      <div class="row">
+        <button class="sm" id="btnPrevBlock">◀ Prev</button>
+        <button class="sm" id="btnNextBlock">Next ▶</button>
+        <label class="inline"><input type="checkbox" id="chkLightTheme"> light theme</label>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>📖 Scripture</h2>
+    <div class="body">
+      <div class="grid2">
+        <input type="text" id="scRef" placeholder="Reference (e.g. John 3:16)">
+        <input type="text" id="scVer" placeholder="Version (e.g. NIV)">
+      </div>
+      <textarea id="scText" rows="3" placeholder="Verse text…"></textarea>
+      <div class="row"><button class="primary" id="btnShowScripture">📖 Project scripture</button></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>🪪 Lower Third (name & title) <span class="tag off" id="ltTag">hidden</span></h2>
+    <div class="body">
+      <input type="text" id="ltTitle" placeholder="Name / headline — e.g. Pastor John Doe">
+      <input type="text" id="ltSub" placeholder="Subtitle — e.g. Senior Pastor · Sunday Service">
+      <div class="row">
+        <select id="ltStyle" style="width:120px">
+          <option value="gold">Gold</option><option value="blue">Blue</option>
+          <option value="red">Red</option><option value="clean">Clean</option>
+        </select>
+        <button class="primary" id="btnLtShow">Show</button>
+        <button id="btnLtHide">Hide</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>📰 Headline Ticker <span class="tag off" id="tickerTag">hidden</span></h2>
+    <div class="body">
+      <textarea id="tickerText" rows="2" placeholder="Announcements separated by • bullets…"></textarea>
+      <div class="row" style="align-items:center">
+        <span class="hint">Speed</span>
+        <input type="range" id="tickerSpeed" min="20" max="200" value="60" style="flex:1">
+        <span class="hint">Bar</span><input type="color" id="tickerBg" value="#111827">
+        <span class="hint">Text</span><input type="color" id="tickerColor" value="#f9fafb">
+      </div>
+      <div class="row">
+        <button class="primary" id="btnTickerShow">Show ticker</button>
+        <button id="btnTickerHide">Hide</button>
+        <button class="sm" id="btnTickerApply">Apply text</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ COLUMN 3 : TRANSLATION & SETUP ============ -->
+<div class="col">
+  <section>
+    <h2>🌍 Live Captions & Translation <span class="tag off" id="capTag">off</span></h2>
+    <div class="body">
+      <div class="grid2">
+        <div><div class="hint">Speaker language</div>
+          <select id="srcLang">
+            <option value="en-US">English</option><option value="es-ES">Spanish</option>
+            <option value="fr-FR">French</option><option value="pt-BR">Portuguese</option>
+            <option value="de-DE">German</option><option value="zh-CN">Chinese</option>
+            <option value="ko-KR">Korean</option><option value="tl-PH">Filipino</option>
+            <option value="id-ID">Indonesian</option><option value="sw-KE">Swahili</option>
+          </select></div>
+        <div><div class="hint">Translate to</div>
+          <select id="tgtLang">
+            <option value="es">Spanish</option><option value="en">English</option>
+            <option value="fr">French</option><option value="pt">Portuguese</option>
+            <option value="de">German</option><option value="zh-CN">Chinese</option>
+            <option value="ko">Korean</option><option value="tl">Filipino</option>
+            <option value="id">Indonesian</option><option value="sw">Swahili</option>
+            <option value="tpi">Tok Pisin</option>
+          </select></div>
+      </div>
+      <div class="row">
+        <button class="primary" id="btnCapStart">🎙 Start listening</button>
+        <button id="btnCapStop">Stop</button>
+      </div>
+      <div class="row">
+        <label class="inline"><input type="checkbox" id="chkCapOrig" checked> show original</label>
+        <label class="inline"><input type="checkbox" id="chkCapTrans" checked> show translation</label>
+      </div>
+      <div id="capPreview"><span class="hint">Captions preview…</span></div>
+      <div class="hint">Uses this device's microphone + browser speech recognition (best in Chrome/Edge),
+        auto-translates each phrase and overlays it as broadcast subtitles on the program output.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>🏷️ Branding & Holding Screen</h2>
+    <div class="body">
+      <input type="text" id="brandName" placeholder="Church name">
+      <input type="text" id="brandTag" placeholder="Tagline / welcome message">
+      <div class="row" style="align-items:center">
+        <input type="text" id="brandLogo" placeholder="Logo symbol (✝, 🕊, …)" style="width:150px">
+        <span class="hint">Accent</span><input type="color" id="brandAccent" value="#c9a227">
+        <button class="sm primary" id="btnBrandApply">Apply</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>🖥️ Stage Display Message</h2>
+    <div class="body">
+      <div class="row">
+        <input type="text" id="stageMsg" placeholder="Message to people on stage (not shown on stream)" style="flex:1">
+        <button class="sm primary" id="btnStageSend">Send</button>
+        <button class="sm" id="btnStageClear">Clear</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>📡 Go Live on YouTube / Facebook</h2>
+    <div class="body">
+      <div class="hint" style="font-size:12.5px; line-height:1.7">
+        <b>1.</b> Open <a href="/output.html" target="_blank" style="color:var(--accent)">Program Output</a>
+        full-screen, or add it in <b>OBS Studio</b> as a <i>Browser Source</i>
+        (URL: <code>http://localhost:3000/output.html</code>, 1920×1080, ✔ control audio via OBS).<br>
+        <b>2.</b> In OBS: <i>Settings → Stream</i> → pick <b>YouTube</b> or <b>Facebook Live</b> and paste
+        your Stream Key (from YouTube Studio “Go Live” / Facebook Live Producer).<br>
+        <b>3.</b> Press <b>Start Streaming</b>. To stream to several platforms at once use OBS multi-output
+        or a restream service.<br>
+        Full step-by-step guide on the <a href="/" target="_blank" style="color:var(--accent)">home page</a>.
+      </div>
+    </div>
+  </section>
+</div>
+</main>
+
+<script src="control.js"></script>
+</body>
+</html>
