@@ -1,21 +1,25 @@
 /*
  * FireBus — drop-in replacement for the local WebSocket hub, powered by
- * Firebase Realtime Database. Exposes the same message protocol the pages
- * already speak: hello / update / command / caption / devices / rtc-*.
+ * Cloud Firestore realtime listeners. Exposes the same message protocol
+ * the pages already speak: hello / update / command / caption / devices / rtc-*.
  */
 /* global firebase */
 
 const firebaseConfig = {
   apiKey: 'AIzaSyBMCsGZPcC13iaadwG6yQmZOKYs1kGRLaQ',
   authDomain: 'church-live-studio-png.firebaseapp.com',
-  databaseURL: 'https://church-live-studio-png-default-rtdb.firebaseio.com',
   projectId: 'church-live-studio-png',
   storageBucket: 'church-live-studio-png.firebasestorage.app',
   messagingSenderId: '1063152167128',
   appId: '1:1063152167128:web:75398c042dc87d68b40fad'
 };
 firebase.initializeApp(firebaseConfig);
-const fdb = firebase.database();
+const fdb = firebase.firestore();
+/* networks that break streaming (some proxies/firewalls) can force long-polling
+   by setting window.__forceLongPoll = true before this script loads */
+if (self.__forceLongPoll) fdb.settings({ experimentalForceLongPolling: true, experimentalAutoDetectLongPolling: false, merge: true });
+const STS = () => firebase.firestore.FieldValue.serverTimestamp();
+const appDoc = name => fdb.collection('app').doc(name);
 
 const DEFAULT_STATE = {
   program: { source: 'logo', cameraDeviceId: null, videoFile: null, imageFile: null, transition: 'fade' },
@@ -36,7 +40,7 @@ const DEFAULT_STATE = {
 
 function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
-/* Fill in any keys RTDB dropped (empty arrays/strings/nulls) from defaults */
+/* Fill in any keys the stored copy is missing, from defaults */
 function withDefaults(def, val) {
   if (val === null || val === undefined) return clone(def);
   if (def && typeof def === 'object' && !Array.isArray(def)) {
@@ -48,90 +52,94 @@ function withDefaults(def, val) {
   return val;
 }
 
-/* Flatten a nested patch into RTDB multi-path update entries (deep merge) */
-function flatten(prefix, obj, out) {
-  for (const k of Object.keys(obj)) {
-    const v = obj[k];
-    if (v && typeof v === 'object' && !Array.isArray(v)) flatten(prefix + k + '/', v, out);
-    else out[prefix + k] = v === undefined ? null : v;
-  }
-  return out;
-}
-
 const FireBus = {
   connect(role, onMessage) {
-    let serverOffset = 0;
-    fdb.ref('.info/serverTimeOffset').on('value', s => { serverOffset = s.val() || 0; });
     const joinedAt = Date.now();
-    const fresh = ts => (ts || 0) > joinedAt + serverOffset - 2000;
+    const fresh = ts => ts && ts.toMillis && ts.toMillis() > joinedAt - 2000;
+    let announcedConn = false;
 
-    /* presence */
-    const me = fdb.ref('bus/presence').push();
-    me.onDisconnect().remove();
-    me.set({ role });
-    fdb.ref('bus/presence').on('value', s => {
-      const v = s.val() || {};
-      onMessage({ type: 'presence', roles: Object.values(v).map(p => p.role) });
-    });
-
-    /* connection indicator */
-    fdb.ref('.info/connected').on('value', s => {
-      onMessage({ type: '_connected', connected: !!s.val() });
-      if (s.val()) { me.onDisconnect().remove(); me.set({ role }); }
-    });
+    /* presence via heartbeats (Firestore has no onDisconnect) */
+    const myRef = fdb.collection('presence').doc(role + '-' + Math.random().toString(36).slice(2, 9));
+    const beat = () => myRef.set({ role, ts: STS() }).catch(() => {});
+    beat();
+    setInterval(beat, 25000);
+    addEventListener('pagehide', () => { myRef.delete().catch(() => {}); });
+    fdb.collection('presence').onSnapshot(s => {
+      const now = Date.now();
+      const roles = s.docs.map(d => d.data())
+        .filter(p => p.ts && now - p.ts.toMillis() < 80000).map(p => p.role);
+      onMessage({ type: 'presence', roles });
+    }, () => {});
 
     /* control seeds the state on first ever run */
     if (role === 'control') {
-      fdb.ref('state').transaction(cur => (cur === null ? clone(DEFAULT_STATE) : undefined));
+      appDoc('state').get().then(s => { if (!s.exists) appDoc('state').set(clone(DEFAULT_STATE)); })
+        .catch(() => {});
     }
 
-    /* shared state */
-    fdb.ref('state').on('value', s => {
-      onMessage({ type: 'state', state: withDefaults(DEFAULT_STATE, s.val()) });
-    });
+    /* shared production state */
+    appDoc('state').onSnapshot(s => {
+      if (!announcedConn) { announcedConn = true; onMessage({ type: '_connected', connected: true }); }
+      onMessage({ type: 'state', state: withDefaults(DEFAULT_STATE, s.data()) });
+    }, () => onMessage({ type: '_connected', connected: false }));
 
-    /* live captions (high frequency, separate channel) */
-    fdb.ref('bus/caption').on('value', s => {
-      const v = s.val() || {};
+    /* live captions (separate high-frequency channel) */
+    appDoc('caption').onSnapshot(s => {
+      const v = s.data() || {};
       onMessage({ type: 'caption', original: v.original || '', translated: v.translated || '' });
-    });
+    }, () => {});
 
     /* transient commands */
-    fdb.ref('bus/commands').limitToLast(3).on('child_added', s => {
-      const v = s.val() || {};
-      if (fresh(v.ts)) onMessage({ type: 'command', name: v.name, payload: v.payload });
-    });
+    fdb.collection('commands').orderBy('ts', 'desc').limit(1).onSnapshot(s => {
+      s.docChanges().forEach(c => {
+        if (c.type !== 'added') return;
+        const v = c.doc.data();
+        if (fresh(v.ts)) onMessage({ type: 'command', name: v.name, payload: v.payload });
+      });
+    }, () => {});
 
     /* camera device reports from outputs */
-    fdb.ref('bus/devices').on('value', s => {
-      const v = s.val();
-      if (v) onMessage({ type: 'devices', devices: v });
-    });
+    appDoc('devices').onSnapshot(s => {
+      const v = s.data();
+      if (v && v.list) onMessage({ type: 'devices', devices: v.list });
+    }, () => {});
 
     /* WebRTC signaling relay */
-    fdb.ref('bus/rtc').limitToLast(20).on('child_added', s => {
-      const v = s.val() || {};
-      if (fresh(v.ts) && v.m && v.m.from !== role) onMessage(v.m);
-    });
+    fdb.collection('rtc').orderBy('ts', 'desc').limit(20).onSnapshot(s => {
+      s.docChanges().filter(c => c.type === 'added').reverse().forEach(c => {
+        const v = c.doc.data();
+        if (fresh(v.ts) && v.m && v.m.from !== role) onMessage(v.m);
+      });
+    }, () => {});
 
-    const TS = firebase.database.ServerValue.TIMESTAMP;
+    /* caption writes are throttled: at most ~3 per second */
+    let capPending = null, capTimer = null;
+    function flushCaption() {
+      capTimer = null;
+      if (!capPending) return;
+      const patch = { ts: STS() };
+      if ('original' in capPending) patch.original = capPending.original ?? '';
+      if ('translated' in capPending) patch.translated = capPending.translated ?? '';
+      capPending = null;
+      appDoc('caption').set(patch, { merge: true }).catch(() => {});
+    }
+
     return {
       send(msg) {
         msg = clone(msg);            // normalizes RTCIceCandidate etc. via toJSON
         switch (msg.type) {
           case 'hello': break;       // presence already handled
-          case 'update': fdb.ref().update(flatten('state/', msg.patch || {}, {})); break;
-          case 'command': fdb.ref('bus/commands').push({ name: msg.name, payload: msg.payload ?? null, ts: TS }); break;
-          case 'caption': {
-            const patch = { ts: TS };
-            if ('original' in msg) patch.original = msg.original ?? '';
-            if ('translated' in msg) patch.translated = msg.translated ?? '';
-            fdb.ref('bus/caption').update(patch); break;
-          }
-          case 'devices': fdb.ref('bus/devices').set(msg.devices || []); break;
+          case 'update': appDoc('state').set(msg.patch || {}, { merge: true }).catch(() => {}); break;
+          case 'command': fdb.collection('commands').add({ name: msg.name, payload: msg.payload ?? null, ts: STS() }); break;
+          case 'caption':
+            capPending = Object.assign(capPending || {}, msg);
+            if (!capTimer) capTimer = setTimeout(flushCaption, 300);
+            break;
+          case 'devices': appDoc('devices').set({ list: msg.devices || [] }); break;
           case 'rtc-offer': case 'rtc-answer': case 'rtc-ice': case 'rtc-stop':
             msg.from = role;
-            fdb.ref('bus/rtc').push({ m: msg, ts: TS }); break;
+            fdb.collection('rtc').add({ m: msg, ts: STS() });
+            break;
         }
       }
     };
@@ -139,29 +147,27 @@ const FireBus = {
 
   /* -------- song library -------- */
   async listSongs() {
-    const s = await fdb.ref('songs').get();
-    const v = s.val() || {};
-    return Object.entries(v).map(([id, song]) => ({ ...song, id }));
+    const s = await fdb.collection('songs').get();
+    return s.docs.map(d => ({ ...d.data(), id: d.id }));
   },
   async saveSong(song) {
-    const id = song.id || fdb.ref('songs').push().key;
     const data = { title: song.title, text: song.text || '' };
-    await fdb.ref('songs/' + id).set(data);
-    return { ...data, id };
+    const ref = song.id ? fdb.collection('songs').doc(song.id) : fdb.collection('songs').doc();
+    await ref.set(data);
+    return { ...data, id: ref.id };
   },
-  async deleteSong(id) { await fdb.ref('songs/' + id).remove(); },
+  async deleteSong(id) { await fdb.collection('songs').doc(id).delete(); },
 
   /* -------- media links library -------- */
   async listMedia() {
     let bundled = [];
     try { bundled = await (await fetch('media-manifest.json')).json(); } catch {}
-    const s = await fdb.ref('mediaLinks').get();
-    const v = s.val() || {};
-    const linked = Object.entries(v).map(([id, m]) => ({ ...m, id }));
+    const s = await fdb.collection('mediaLinks').get();
+    const linked = s.docs.map(d => ({ ...d.data(), id: d.id }));
     return [...bundled, ...linked];
   },
-  async addMedia(item) { await fdb.ref('mediaLinks').push(item); },
-  async deleteMedia(id) { await fdb.ref('mediaLinks/' + id).remove(); }
+  async addMedia(item) { await fdb.collection('mediaLinks').add(item); },
+  async deleteMedia(id) { await fdb.collection('mediaLinks').doc(id).delete(); }
 };
 
 /* -------- translation (direct from browser; no server needed) -------- */
