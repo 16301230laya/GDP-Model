@@ -10,6 +10,26 @@ Two interchangeable front-ends share the same methodology:
 2. **Web app** — `webapp/index.html`, a single offline-first HTML file
    pre-configured for **Papua New Guinea**
 
+## Analysis dashboard: `analysis/GDP_2025_Analysis_Dashboard.xlsx`
+
+A learning companion to the Treasury forecasting model (`GDP_model_forecasting_2025.xlsx`)
+and the *GDP Model – Theory and Forecast* slides. It rebuilds the **2025 real GDP estimate**
+step by step, the way the slides describe it:
+
+| Tab | What it shows |
+|---|---|
+| `Guide` | The three GDP approaches, how the forecast works, colour code |
+| `Dashboard` | Headline growth, contributions to growth by sector, nominal GDP, charts |
+| `Resource` | DoT production volumes 2024 vs 2025 → resource GVA (real and nominal) |
+| `AFF` | Commodity-board volumes for formal agriculture; informal activity grows with population |
+| `Public_Admin` | Compensation of employees growth ÷ wage (deflator) growth |
+| `Other_Sectors` | Population default growth, with a yellow column for your judgement overrides |
+| `History` | 2006–2024 actuals plus the 2025 estimate |
+| `Model_Check` | Gaps in the forecasting model that stop its 2025 column calculating |
+
+Every result is a live formula; change a red/yellow input and the dashboard updates.
+To rebuild it: `python3 analysis/build_dashboard.py` (reads `analysis/source_data.json`).
+
 ## The web app: `webapp/index.html`
 
 Built for low-connectivity use: one file, no internet needed after it is

@@ -1,0 +1,711 @@
+{
+ "history": {
+  "years": [
+   2006,
+   2007,
+   2008,
+   2009,
+   2010,
+   2011,
+   2012,
+   2013,
+   2014,
+   2015,
+   2016,
+   2017,
+   2018,
+   2019,
+   2020,
+   2021,
+   2022,
+   2023,
+   2024
+  ],
+  "nominal": [
+   25.53874901427863,
+   28.304313372545607,
+   31.51243757926899,
+   32.013264146808105,
+   38.7520786738458,
+   42.6422227853663,
+   44.37163561172543,
+   47.72137401911756,
+   57.13077414527617,
+   60.13913213605374,
+   65.03827691681275,
+   72.52164608631274,
+   79.40467071135046,
+   83.84368623629382,
+   82.5150095004795,
+   91.61197910349595,
+   111.39484159885212,
+   110.61914002817194,
+   118.68043019304174
+  ],
+  "real": [
+   34.35540225651355,
+   37.04034199436888,
+   36.93053304983886,
+   39.44196487840094,
+   43.43682618836147,
+   43.917907975448536,
+   45.96321749112769,
+   47.721205862370276,
+   54.18459094130551,
+   57.7488118539989,
+   60.91931145728665,
+   63.07242929055616,
+   62.896298057895656,
+   65.71437590101573,
+   63.632917703264766,
+   63.30752858697555,
+   66.92085903424397,
+   69.47113677189974,
+   72.1723918989403
+  ],
+  "oil_gas": [
+   2152.179182755891,
+   2238.6887129179636,
+   1970.1659779190577,
+   1635.6375074030002,
+   1714.9435876458535,
+   1488.9748226788893,
+   1463.004956356065,
+   1515.080298252713,
+   6054.8631905196,
+   11248.566043489209,
+   12859.943939334664,
+   13389.911672914335,
+   11339.57605273096,
+   13056.695406128003,
+   12960.522119306208,
+   12034.592459739146,
+   12198.467196383232,
+   12347.29092190986,
+   12189.830627437179
+  ],
+  "mining": [
+   5168.754876996702,
+   5173.194860947914,
+   4989.129595557584,
+   6531.40976874435,
+   6400.552299417773,
+   5398.70344778617,
+   4703.113471310159,
+   4963.274021674359,
+   5208.811107946128,
+   5337.483391489584,
+   6263.969588914482,
+   7277.41499206875,
+   7435.69790474121,
+   7832.390382364262,
+   6016.153999167596,
+   4739.705303496152,
+   5437.591221768889,
+   5519.279211797843,
+   6103.106161158481
+  ],
+  "aff": [
+   7536.070468471116,
+   7452.84124021128,
+   7552.799470036857,
+   7991.7349929044285,
+   8216.644669105144,
+   8286.58869229864,
+   8780.819263045187,
+   9191.048882811021,
+   9502.88509459696,
+   9251.65643690023,
+   9496.921195697198,
+   9720.433205868472,
+   10164.748787912244,
+   10394.362691449624,
+   10588.100054465871,
+   10702.643278087851,
+   11035.261121926798,
+   11141.29725977009,
+   11373.608095157599
+  ],
+  "pahe": [
+   2932.677445500783,
+   3617.3033773664356,
+   3285.4308610235776,
+   3546.040705845715,
+   3859.508817714629,
+   4142.130001333958,
+   4282.366531079733,
+   4699.69200581624,
+   5076.689285061019,
+   5219.010548315595,
+   5505.329276471864,
+   5625.068870508539,
+   6020.676944178023,
+   6056.692539168931,
+   6475.3144699471995,
+   6946.181265252402,
+   7195.612622733426,
+   7702.31461355301,
+   8154.808731678668
+  ],
+  "bls": [
+   15408.375022539245,
+   17156.685619988075,
+   17822.406980972795,
+   18424.29218193338,
+   21856.2017984828,
+   23483.561358710627,
+   25085.692572041058,
+   25586.310653815926,
+   25600.156940399032,
+   24227.101476003336,
+   24621.14632058235,
+   24464.387040510726,
+   25237.967240461323,
+   25542.090198068207,
+   25040.49228465938,
+   26064.065126169167,
+   28157.466252518123,
+   29274.171521008182,
+   30889.646291673886
+  ],
+  "taxes": [
+   1157.3452602498223,
+   1401.62818293722,
+   1310.6001643289924,
+   1312.8497215700743,
+   1388.9750159952646,
+   1117.9496526402681,
+   1648.2206972954987,
+   1765.8,
+   2741.1853227827773,
+   2464.993957800954,
+   2172.0011362860955,
+   2595.2135086853305,
+   2697.6311278718904,
+   2832.1446838366855,
+   2552.334775718492,
+   2820.341154230831,
+   2896.4606189135325,
+   3486.78324386078,
+   3461.391991834475
+  ],
+  "population": [
+   6240325.47366171,
+   6434817.897166619,
+   6635372.072251708,
+   6842176.9257222405,
+   7055427.272671245,
+   7254442,
+   7446297.078234328,
+   7643226.064433499,
+   7845363.146038748,
+   8052846.05928831,
+   8265816.18307092,
+   8484418.635261403,
+   8708802.37160403,
+   8939120.287210962,
+   9175529.320745027,
+   9418190.561357731,
+   9667269.358455438,
+   9922935.434368486,
+   10185362.99999999
+  ]
+ },
+ "resource": {
+  "Petroleum (oil)": {
+   "cur24": 1494.8795992844102,
+   "con24": 1051.16168555385,
+   "price25": 0.9155531395279082
+  },
+  "LNG": {
+   "cur24": 17111.842615326328,
+   "con24": 9822.438398886186,
+   "price25": 1.0041194477536557
+  },
+  "Condensate": {
+   "cur24": 1568.7849456322003,
+   "con24": 1316.2305429971418,
+   "price25": 0.9155531395279082
+  },
+  "Copper": {
+   "cur24": 2226.6943184967563,
+   "con24": 1301.3274186580957,
+   "price25": 1.1644138029853934
+  },
+  "Gold": {
+   "cur24": 8723.168358509038,
+   "con24": 3757.5845612556595,
+   "price25": 1.5425082218578436
+  },
+  "Silver": {
+   "cur24": 72.69440828820034,
+   "con24": 44.69059188110212,
+   "price25": 1.5063250928802216
+  },
+  "Nickel": {
+   "cur24": 1137.2538838451853,
+   "con24": 740.8728955140642,
+   "price25": 0.9650025821671351
+  },
+  "Cobalt": {
+   "cur24": 125.46986464152766,
+   "con24": 123.87899384956036,
+   "price25": 1.419311294568104
+  },
+  "Household / alluvial (HH)": {
+   "cur24": 233.95409110672077,
+   "con24": 134.75169999999997,
+   "price25": 1.0441409532675316
+  }
+ },
+ "ii_share": {
+  "oil_gas": 21.707200000000014,
+  "mining": 37.71377008768584
+ },
+ "dot": [
+  [
+   "MINING",
+   2024,
+   2025
+  ],
+  [
+   "Gold",
+   null,
+   null
+  ],
+  [
+   "Prodn volume (tonnes)",
+   46.834349429588165,
+   53.7957923765249
+  ],
+  [
+   "Ok Tedi",
+   8.268145561752918,
+   9.279721312877616
+  ],
+  [
+   "Porgera",
+   5.849184824733606,
+   11.696682246901176
+  ],
+  [
+   "Misima",
+   0,
+   0
+  ],
+  [
+   "Lihir",
+   19.097532716966167,
+   18.202594807275105
+  ],
+  [
+   "Tolukuma",
+   0,
+   0
+  ],
+  [
+   "Kainantu",
+   4.364283881402455,
+   5.116023731950266
+  ],
+  [
+   "Simberi",
+   1.675029353903097,
+   1.5205971866908234
+  ],
+  [
+   "Hidden Valley",
+   4.580173090829918,
+   4.98017309082992
+  ],
+  [
+   "Small Scale Alluvial",
+   3,
+   3
+  ],
+  [
+   "Copper",
+   null,
+   null
+  ],
+  [
+   "Prodn volume (000 lbs)",
+   227.61792477705026,
+   233.72940316
+  ],
+  [
+   "Ok Tedi",
+   227.61792477705026,
+   233.72940316
+  ],
+  [
+   "Silver",
+   null,
+   null
+  ],
+  [
+   "Prodn volume (tonnes)",
+   44.07972902849554,
+   48.1761516913946
+  ],
+  [
+   "Ok Tedi",
+   30.89427336260909,
+   31.363062459694703
+  ],
+  [
+   "Porgera",
+   3.7884556658864565,
+   2.961763909084547
+  ],
+  [
+   "Misima",
+   0,
+   0
+  ],
+  [
+   "Lihir",
+   2.8,
+   2.8
+  ],
+  [
+   "Kainantu",
+   1.3,
+   4.802500559584947
+  ],
+  [
+   "Simberi",
+   0,
+   0.9518247630304114
+  ],
+  [
+   "Hidden Valley",
+   4.297,
+   4.297
+  ],
+  [
+   "Small Scale Alluvial",
+   1,
+   1
+  ],
+  [
+   "Nickel",
+   null,
+   null
+  ],
+  [
+   "Prodn volume (tonnes)",
+   28669.089999999997,
+   32846.29489436
+  ],
+  [
+   "Ramu",
+   28669.089999999997,
+   32846.29489436
+  ],
+  [
+   "Cobalt",
+   null,
+   null
+  ],
+  [
+   "Prodn volume (tonnes)",
+   2625.1900000000005,
+   3087.8504519999997
+  ],
+  [
+   "Ramu",
+   2625.1900000000005,
+   3087.8504519999997
+  ],
+  [
+   "OIL & GAS",
+   2024,
+   2025
+  ],
+  [
+   "Petroleum",
+   null,
+   null
+  ],
+  [
+   "Industry Production Volume (000 barrels)",
+   4.2632,
+   3.564955
+  ],
+  [
+   "Kutubu",
+   1.73448,
+   1.40379
+  ],
+  [
+   "Moran",
+   1.93377,
+   1.639215
+  ],
+  [
+   "SE Manada & Agogo",
+   0.59495,
+   0.52195
+  ],
+  [
+   "Gobe",
+   0,
+   0
+  ],
+  [
+   "Gas",
+   null,
+   null
+  ],
+  [
+   "PNG LNG production volume (Tbtu)",
+   440,
+   470
+  ],
+  [
+   "Condensate",
+   null,
+   null
+  ],
+  [
+   "PNG LNG production volume (MB)",
+   5.216,
+   7
+  ]
+ ],
+ "aff": [
+  {
+   "name": "Cocoa",
+   "group": "Crop & animal",
+   "con24": 388.6768088962011,
+   "v24": 41.108,
+   "v25": 60,
+   "method": "volume"
+  },
+  {
+   "name": "Coffee",
+   "group": "Crop & animal",
+   "con24": 445.26890050523605,
+   "v24": 49.60638,
+   "v25": 47.36022,
+   "method": "volume"
+  },
+  {
+   "name": "Tea",
+   "group": "Crop & animal",
+   "con24": 0.5439015593618021,
+   "v24": 0.3999968,
+   "v25": 0.4499964,
+   "method": "volume"
+  },
+  {
+   "name": "Copra",
+   "group": "Crop & animal",
+   "con24": 10.6937630090049,
+   "v24": 23.018296,
+   "v25": 27.334164,
+   "method": "volume"
+  },
+  {
+   "name": "Copra oil",
+   "group": "Crop & animal",
+   "con24": 41.099420557625834,
+   "v24": 22.841763000000004,
+   "v25": 23.2853843,
+   "method": "volume"
+  },
+  {
+   "name": "Palm oil",
+   "group": "Crop & animal",
+   "con24": 1023.3033296858486,
+   "v24": 617.9256839129238,
+   "v25": 671.9320656824401,
+   "method": "volume"
+  },
+  {
+   "name": "Rubber",
+   "group": "Crop & animal",
+   "con24": 6.099888705442368,
+   "v24": 2.74423776,
+   "v25": 3.0749184100800004,
+   "method": "volume"
+  },
+  {
+   "name": "Logs (formal forestry)",
+   "group": "Forestry",
+   "con24": 294.840281369926,
+   "v24": 2305.189,
+   "v25": 2055.796,
+   "method": "volume"
+  },
+  {
+   "name": "Fishing (formal)",
+   "group": "Fishing",
+   "con24": 536.152337704975,
+   "v24": 219.92000000000004,
+   "v25": 222.23962796967146,
+   "method": "volume"
+  },
+  {
+   "name": "Livestock (formal)",
+   "group": "Crop & animal",
+   "con24": 1245.2905569994814,
+   "growth": 0.12185389531079527,
+   "method": "model"
+  },
+  {
+   "name": "Livestock (informal)",
+   "group": "Crop & animal",
+   "con24": 540.9230856966498,
+   "method": "informal"
+  },
+  {
+   "name": "Fruit & veg (informal)",
+   "group": "Crop & animal",
+   "con24": 5378.17402239002,
+   "method": "informal"
+  },
+  {
+   "name": "Betel nut (informal)",
+   "group": "Crop & animal",
+   "con24": 1019.0257102589507,
+   "method": "informal"
+  },
+  {
+   "name": "Forestry (informal)",
+   "group": "Forestry",
+   "con24": 206.90577209669715,
+   "method": "informal"
+  },
+  {
+   "name": "Fishing (informal)",
+   "group": "Fishing",
+   "con24": 236.2276032718169,
+   "method": "informal"
+  }
+ ],
+ "pop_growth_25_assump": 2.6,
+ "wage_growth_25": 2.8,
+ "pa": [
+  {
+   "name": "Public administration & defence",
+   "cur24": 6049.172888823138,
+   "con24": 4261.449166605635
+  },
+  {
+   "name": "Education",
+   "cur24": 3263.0070453843537,
+   "con24": 2321.33740457024
+  },
+  {
+   "name": "Health & social work",
+   "cur24": 2282.089799154843,
+   "con24": 1572.0221605027923
+  }
+ ],
+ "coe": {
+  "2024": 7214.8,
+  "2025": 7859.8
+ },
+ "bls": [
+  {
+   "name": "Manufacturing",
+   "con24": 1171.4357040683926,
+   "comment": "for 2026 choosen the average of 2022-2024  with a little bump - SWT increases merchandise imports increased, employment increased - private sector credit growth"
+  },
+  {
+   "name": "Electricity,Gas,Steam And Airconditioning Supply",
+   "con24": 618.5003331983652,
+   "comment": "Large increase in generator purchases"
+  },
+  {
+   "name": "Water Supply, Sewage, Waste Management",
+   "con24": 139.37601362959796,
+   "comment": "water increase in imports - longer term growth expected to be persistant. Sector going through lot of infrastructure detoriation. Next few years should see some growth"
+  },
+  {
+   "name": "Construction",
+   "con24": 4619.904931169341,
+   "comment": "Increased government spending in 2026 leading to strong growth  government spending in net financial assets could increase by 19.8% (nominal). Connect PNG program in future years. Stronger private investment expected"
+  },
+  {
+   "name": "Wholesale And Retail Trade",
+   "con24": 6714.31494122243,
+   "comment": "for 2026 owards choosen the average of 2022-2024. Growth in imports supports this. Higher commodity prices indicative of demand. Tapered down a little for 2027. 2028 assume the fx effect stops"
+  },
+  {
+   "name": "Transport And Storage",
+   "con24": 1497.5712310783767,
+   "comment": "average of last few years is 7.5 - going with 7 with the airniugini and png air refleeting program suggesting strong growth. Resumption of Pogera"
+  },
+  {
+   "name": "Accomodation And Food Service Activity",
+   "con24": 1203.2573258911398,
+   "comment": "for 2026 choosen the average of 2022-2024. 2027 election plus toursim growth long term "
+  },
+  {
+   "name": "Information And Communication",
+   "con24": 2667.133860926317,
+   "comment": "for 2026 lowest number of last 4 years. gone for 7 as longer term growth"
+  },
+  {
+   "name": "Finance",
+   "con24": 1266.368276481322,
+   "comment": "increased growth in financial instiuttions in 2026. gone for average of last few years going forward "
+  },
+  {
+   "name": "Insurance",
+   "con24": 264.7204151935418,
+   "comment": null
+  },
+  {
+   "name": "Rent & Other",
+   "con24": 1480.2930351038071,
+   "comment": "slight overall growth vs last year"
+  },
+  {
+   "name": "Imputed Rent",
+   "con24": 2661.4443045188336,
+   "comment": "slight overall growth vs last year"
+  },
+  {
+   "name": "Professional,Scientific And Technical Activities",
+   "con24": 683.594608365937,
+   "comment": "for 2026 choosen slight bump vs recent average due to court cases etc. long term gone for the average of 2022-2024"
+  },
+  {
+   "name": "Administrative And Support Service Activities",
+   "con24": 5450.610147892051,
+   "comment": "slight overall growth vs last year. Increased law in order might see reduction in long term growth"
+  },
+  {
+   "name": "Arts,Entertainmentand Recreation",
+   "con24": 23.186156224797244,
+   "comment": null
+  },
+  {
+   "name": "Other Service Activities",
+   "con24": 401.9187208340387,
+   "comment": null
+  },
+  {
+   "name": "Activities Of Households As Employers",
+   "con24": 26.016285875594498,
+   "comment": "Has grown by 3.1% last few years"
+  }
+ ],
+ "bls_default_growth": 2.6446565874305383,
+ "taxes": {
+  "con24": 3461.391991834475,
+  "con25": 3564.219209153308
+ },
+ "gdp_ipd": {
+  "2024": 164.44020638698592,
+  "2025": 175.7360109511604
+ },
+ "check": {
+  "real24": 72172.3918989403,
+  "nom24": 118680.43019304174
+ }
+}
